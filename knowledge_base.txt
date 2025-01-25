@@ -1,0 +1,8 @@
+Q: What is the capital of France?
+A: The capital of France is Paris.
+
+Q: Where is the Eiffel Tower located?
+A: The Eiffel Tower is located in Paris.
+
+Q: What is the population of France?
+A: The population of France is approximately 67 million.
