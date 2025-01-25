@@ -20,9 +20,9 @@ async def generate_openai_compatible_response(prompt, model):
     """
     # 构造 Ollama 的请求体
     ollama_data = {
-        "model": model,  # 使用的模型名称
-        "prompt": prompt,  # 使用最后一条用户消息作为输入
-        "stream": True  # 启用流式返回
+        "model": model,
+        "prompt": prompt,
+        "stream": True
     }
 
     # 异步调用 Ollama 的 API
@@ -54,22 +54,39 @@ async def generate_openai_compatible_response(prompt, model):
                     }
 
                     # 返回 JSON 格式的流式数据
-                    yield f"data: {json.dumps(openai_chunk)}\n\n"
+                    yield f"data: {json.dumps(openai_chunk)}\n\n".encode('utf-8')
 
             # 返回结束标志
-            yield "data: [DONE]\n\n"
+            yield "data: [DONE]\n\n".encode('utf-8')
 
 
 @app.post("/v1/chat/completions")
 async def chat_completions(request: Request):
     data = await request.json()
     messages = data.get("messages", [])
-    model = data.get("model", "mistral:7b")
+    # model = data.get("model", "mistral:7b")
+    model = "mistral:7b"
     if not messages:
         return {"error": "No messages provided"}
 
     prompt = messages[-1].get("content", "")
-    return StreamingResponse(generate_openai_compatible_response(prompt, model), media_type="text/plain")
+    return StreamingResponse(generate_openai_compatible_response(prompt, model), media_type="text/event-stream")
+
+
+@app.get("/v1/models")
+async def list_models():
+    try:
+        model = {
+            "id": "openchat_3.6",
+            "object": "model",
+        }
+
+        response = {
+            "data": [model]
+        }
+        return response
+    except Exception as e:
+        return {"error": str(e)}
 
 
 # 运行应用
